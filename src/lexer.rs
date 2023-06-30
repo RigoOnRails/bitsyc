@@ -157,7 +157,9 @@ mod tests {
     #[test]
     fn tokenizes_correctly() -> Result<()> {
         let sample_program = String::from("
-            {This is a sample program. 🤠}
+            {
+                This is a sample program. 🤠
+            }
             BEGIN
                 my_number = -5
                 IFP my_number
