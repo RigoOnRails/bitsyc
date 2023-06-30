@@ -93,6 +93,15 @@ impl Iterator for Lexer {
                     _ => Token::Identifier(keyword),
                 })
             },
+            b'0'..=b'9' => {
+                let starting_position = self.current_position;
+                while self.character.is_ascii_digit() {
+                    self.read_character();
+                }
+
+                let number = String::from_utf8(self.input[starting_position..self.current_position].to_vec()).unwrap();
+                return Some(Token::Number(number.parse::<i32>().unwrap()));
+            },
         };
     }
 }
