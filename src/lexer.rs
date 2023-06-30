@@ -76,6 +76,14 @@ impl Iterator for Lexer {
         }
 
         let token = match self.character {
+            b'{' => {
+                while self.character != b'}' {
+                    self.set_next_character();
+                }
+
+                self.set_next_character();
+                return self.next();
+            },
             b'a'..=b'z' | b'A'..=b'Z' | b'_' => {
                 let starting_position = self.current_position;
                 while self.character.is_ascii_alphanumeric() || self.character == b'_' {
@@ -132,7 +140,7 @@ mod tests {
         let sample_program = String::from("
             {This is a sample program. 🤠}
             BEGIN
-                my_number = -5;
+                my_number = -5
                 IFP my_number
                     PRINT my_number {Won't happen.}
                 ELSE
