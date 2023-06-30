@@ -102,6 +102,12 @@ impl Iterator for Lexer {
                 let number = String::from_utf8(self.input[starting_position..self.current_position].to_vec()).unwrap();
                 return Some(Token::Number(number.parse::<i32>().unwrap()));
             },
+            b'+' => Token::Add,
+            b'-' => Token::Subtract,
+            b'*' => Token::Multiply,
+            b'/' => Token::Divide,
+            b'%' => Token::Modulo,
+            b'=' => Token::Assign,
         };
     }
 }
