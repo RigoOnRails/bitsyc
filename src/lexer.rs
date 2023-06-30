@@ -110,6 +110,7 @@ impl Iterator for Lexer {
             b'=' => Token::Assign,
             b'(' => Token::LeftParenthesis,
             b')' => Token::RightParenthesis,
+            0 => return None,
             _ => unreachable!("Invalid character: {}", self.character),
         };
 
