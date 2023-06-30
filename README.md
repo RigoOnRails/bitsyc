@@ -7,8 +7,17 @@
 You can find the language spec document here: [@apbendi/bitsyspec](https://github.com/apbendi/bitsyspec/blob/master/BITSY.md).
 
 ## Installation
-```
+```console
 $ cargo install bitsyc
 ```
 
 ## Compiling a Bitsy program
+This will compile down to machine code for your platform. The code generation is done using LLVM.
+```console
+$ bitsyc example.bitsy
+```
+
+To execute your code, just run:
+```console
+$ ./example
+```
