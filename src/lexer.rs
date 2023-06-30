@@ -328,4 +328,15 @@ mod tests {
 
         assert_eq!(tokens.unwrap_err().to_string(), "Invalid number: 2147483648");
     }
+
+    #[test]
+    fn handles_invalid_character() {
+        let tokens = Lexer::new(String::from("
+            BEGIN
+                $lol = 3
+            END
+        ")).collect::<Result<Vec<Token>>>();
+
+        assert_eq!(tokens.unwrap_err().to_string(), "Invalid character: $");
+    }
 }
