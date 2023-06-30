@@ -62,6 +62,11 @@ impl Parser {
             program.push(ASTNode::Todo);
         }
 
+        // Don't allow instructions after `BEGIN ... END`.
+        if self.next_token.is_some() {
+            bail!("Can't parse instructions after `BEGIN ... END`.");
+        }
+
         // TODO: Ignore the final `END` token when parsing the rest of the nodes.
         program.pop();
 
@@ -79,7 +84,9 @@ impl Parser {
         }
 
         match self.current_token {
-            Token::Begin | Token::Loop => self.block_depth += 1,
+            Token::Begin | Token::IfPositive | Token::IfZero | Token::IfNegative | Token::Loop => {
+                self.block_depth += 1
+            },
             Token::End => self.block_depth -= 1,
             _ => {},
         }
@@ -138,6 +145,22 @@ mod tests {
                     END
             ").unwrap_err().to_string(),
             "Unexpected end of file.",
+        );
+    }
+
+    #[test]
+    fn handles_instructions_after_end() {
+        assert_eq!(
+            parse("
+                BEGIN
+                    LOOP
+                    END
+                END
+
+                BEGIN
+                END
+            ").unwrap_err().to_string(),
+            "Can't parse instructions after `BEGIN ... END`.",
         );
     }
 }
