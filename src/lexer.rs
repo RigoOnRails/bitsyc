@@ -1,3 +1,7 @@
+// TODO: Add support for comments.
+// TODO: Good error messages.
+
+#[derive(Debug, PartialEq)]
 enum Token {
     // Keywords
     Begin,
@@ -111,10 +115,164 @@ impl Iterator for Lexer {
             b'(' => Token::LeftParenthesis,
             b')' => Token::RightParenthesis,
             0 => return None,
-            _ => unreachable!("Invalid character: {}", self.character),
+            _ => unreachable!("Invalid character: {}", self.character as char),
         };
 
         self.read_character();
         Some(token)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tokenizes_correctly() {
+        let sample_program = String::from("
+            {This is a sample program. 🤠}
+            BEGIN
+                my_number = -5;
+                IFP my_number
+                    PRINT my_number {Won't happen.}
+                ELSE
+                    PRINT -999
+                END
+
+                IFZ my_number
+                    PRINT my_number {Also won't happen.}
+                END
+
+                IFN my_number
+                    PRINT my_number {This will actually happen.}
+                END
+
+                READ cool
+                PRINT cool + 1
+                PRINT cool - 1
+                PRINT cool * 2
+                PRINT cool / 2
+                PRINT cool % 2
+                PRINT (cool + (5 * 2))
+
+                current = 10
+                LOOP
+                    PRINT current
+                    current = current - 1
+                    IFZ cool
+                        BREAK
+                    END
+                END
+            END
+        ");
+
+        let tokens: Vec<Token> = Lexer::new(sample_program).collect();
+        assert_eq!(tokens, vec![
+            Token::Begin,
+
+            Token::Identifier(String::from("my_number")),
+            Token::Assign,
+            Token::Subtract,
+            Token::Number(5),
+
+            Token::IfPositive,
+            Token::Identifier(String::from("my_number")),
+
+            Token::Print,
+            Token::Identifier(String::from("my_number")),
+
+            Token::Else,
+
+            Token::Print,
+            Token::Subtract,
+            Token::Number(999),
+
+            Token::End,
+
+            Token::IfZero,
+            Token::Identifier(String::from("my_number")),
+
+            Token::Print,
+            Token::Identifier(String::from("my_number")),
+
+            Token::End,
+
+            Token::IfNegative,
+            Token::Identifier(String::from("my_number")),
+
+            Token::Print,
+            Token::Identifier(String::from("my_number")),
+
+            Token::End,
+
+            Token::Read,
+            Token::Identifier(String::from("cool")),
+
+            Token::Print,
+            Token::Identifier(String::from("cool")),
+            Token::Add,
+            Token::Number(1),
+
+            Token::Print,
+            Token::Identifier(String::from("cool")),
+            Token::Subtract,
+            Token::Number(1),
+
+            Token::Print,
+            Token::Identifier(String::from("cool")),
+            Token::Multiply,
+            Token::Number(2),
+
+            Token::Print,
+            Token::Identifier(String::from("cool")),
+            Token::Divide,
+            Token::Number(2),
+
+            Token::Print,
+            Token::Identifier(String::from("cool")),
+            Token::Modulo,
+            Token::Number(2),
+
+            Token::Print,
+            Token::LeftParenthesis,
+            Token::Identifier(String::from("cool")),
+            Token::Add,
+            Token::LeftParenthesis,
+            Token::Number(5),
+            Token::Multiply,
+            Token::Number(2),
+            Token::RightParenthesis,
+            Token::RightParenthesis,
+
+            Token::Identifier(String::from("current")),
+            Token::Assign,
+            Token::Number(10),
+
+            Token::Loop,
+
+            Token::Print,
+            Token::Identifier(String::from("current")),
+
+            Token::Identifier(String::from("current")),
+            Token::Assign,
+            Token::Identifier(String::from("current")),
+            Token::Subtract,
+            Token::Number(1),
+
+            Token::IfZero,
+            Token::Identifier(String::from("cool")),
+
+            Token::Break,
+
+            Token::End,
+
+            Token::End,
+
+            Token::End,
+        ]);
+
+        // Make sure we handle empty input.
+        let tokens: Vec<Token> = Lexer::new(String::from("")).collect();
+        assert_eq!(tokens, vec![]);
     }
 }
