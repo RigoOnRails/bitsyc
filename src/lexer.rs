@@ -50,11 +50,11 @@ impl Lexer {
             next_position: 0,
         };
 
-        lexer.read_character();
+        lexer.set_next_character();
         lexer
     }
 
-    fn read_character(&mut self) {
+    fn set_next_character(&mut self) {
         if self.next_position >= self.input.len() {
             self.character = 0;
         } else {
@@ -72,14 +72,14 @@ impl Iterator for Lexer {
     fn next(&mut self) -> Option<Self::Item> {
         // Skip whitespace.
         while self.character.is_ascii_whitespace() {
-            self.read_character();
+            self.set_next_character();
         }
 
         let token = match self.character {
             b'a'..=b'z' | b'A'..=b'Z' | b'_' => {
                 let starting_position = self.current_position;
                 while self.character.is_ascii_alphanumeric() || self.character == b'_' {
-                    self.read_character();
+                    self.set_next_character();
                 }
 
                 let keyword = String::from_utf8(self.input[starting_position..self.current_position].to_vec()).unwrap();
@@ -100,7 +100,7 @@ impl Iterator for Lexer {
             b'0'..=b'9' => {
                 let starting_position = self.current_position;
                 while self.character.is_ascii_digit() {
-                    self.read_character();
+                    self.set_next_character();
                 }
 
                 let number = String::from_utf8(self.input[starting_position..self.current_position].to_vec()).unwrap();
@@ -118,7 +118,7 @@ impl Iterator for Lexer {
             _ => unreachable!("Invalid character: {}", self.character as char),
         };
 
-        self.read_character();
+        self.set_next_character();
         Some(token)
     }
 }
