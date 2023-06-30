@@ -116,14 +116,18 @@ impl Parser {
         self.set_next_token()?;
 
         match self.current_token {
-            Token::Identifier(name) => self.parse_assignment(name),
+            Token::Identifier(_) => self.parse_assignment(),
             _ => Ok(ASTNode::Todo),
         }
     }
 
-    fn parse_assignment(&mut self, name: String) -> Result<ASTNode> {
-        self.set_next_token()?;
+    fn parse_assignment(&mut self) -> Result<ASTNode> {
+        let name = match self.current_token {
+            Token::Identifier(ref name) => name.clone(),
+            _ => unreachable!(),
+        };
 
+        self.set_next_token()?;
         if self.current_token != Token::Assign {
             bail!("Expected `=` after identifier.")
         }
