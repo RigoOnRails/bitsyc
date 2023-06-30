@@ -37,7 +37,7 @@ fn main() -> Result<()> {
     };
 
     let lexer = Lexer::new(input);
-    let _parser = Parser::new(lexer);
+    let _parser = Parser::new(lexer)?;
 
     Ok(())
 }
