@@ -7,5 +7,8 @@
 You can find the language spec document here: [@apbendi/bitsyspec](https://github.com/apbendi/bitsyspec/blob/master/BITSY.md).
 
 ## Installation
+```
+$ cargo install bitsyc
+```
 
 ## Compiling a Bitsy program
