@@ -96,11 +96,11 @@ impl Parser {
     fn parse_program(&mut self) -> Result<Vec<ASTNode>> {
         let mut program = vec![];
         while !self.completed() {
-            self.set_next_token()?;
+            let node = self.parse_statement()?;
 
             // Don't consider `END` as a node.
             if self.current_token != Token::End {
-                program.push(ASTNode::Todo);
+                program.push(node);
             }
         }
 
@@ -110,6 +110,30 @@ impl Parser {
         }
 
         Ok(program)
+    }
+
+    fn parse_statement(&mut self) -> Result<ASTNode> {
+        self.set_next_token()?;
+
+        match self.current_token {
+            Token::Identifier(name) => self.parse_assignment(name),
+            _ => Ok(ASTNode::Todo),
+        }
+    }
+
+    fn parse_assignment(&mut self, name: String) -> Result<ASTNode> {
+        self.set_next_token()?;
+
+        if self.current_token != Token::Assign {
+            bail!("Expected `=` after identifier.")
+        }
+
+        let expression = self.parse_expression()?;
+        Ok(ASTNode::Assignment(name, Box::new(expression)))
+    }
+
+    fn parse_expression(&mut self) -> Result<ASTNode> {
+        Ok(ASTNode::Todo)
     }
 
     /// Sets the next token. Returns an error if an EOF is reached.
