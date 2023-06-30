@@ -61,3 +61,38 @@ impl Lexer {
         self.next_position += 1;
     }
 }
+
+impl Iterator for Lexer {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // Skip whitespace.
+        while self.character.is_ascii_whitespace() {
+            self.read_character();
+        }
+
+        let token = match self.character {
+            b'a'..=b'z' | b'A'..=b'Z' | b'_' => {
+                let starting_position = self.current_position;
+                while self.character.is_ascii_alphanumeric() || self.character == b'_' {
+                    self.read_character();
+                }
+
+                let keyword = String::from_utf8(self.input[starting_position..self.current_position].to_vec()).unwrap();
+                return Some(match keyword.as_str() {
+                    "BEGIN" => Token::Begin,
+                    "END" => Token::End,
+                    "IFP" => Token::IfPositive,
+                    "IFZ" => Token::IfZero,
+                    "IFN" => Token::IfNegative,
+                    "ELSE" => Token::Else,
+                    "LOOP" => Token::Loop,
+                    "BREAK" => Token::Break,
+                    "PRINT" => Token::Print,
+                    "READ" => Token::Read,
+                    _ => Token::Identifier(keyword),
+                })
+            },
+        };
+    }
+}
