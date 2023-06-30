@@ -1,4 +1,5 @@
 // TODO: Good error messages.
+use anyhow::{Result, anyhow};
 
 #[derive(Debug, PartialEq)]
 pub enum Token {
@@ -75,7 +76,7 @@ impl Lexer {
 }
 
 impl Iterator for Lexer {
-    type Item = Token;
+    type Item = Result<Token>;
 
     fn next(&mut self) -> Option<Self::Item> {
         // Skip whitespace.
@@ -99,7 +100,7 @@ impl Iterator for Lexer {
                 }
 
                 let keyword = String::from_utf8(self.input[starting_position..self.current_position].to_vec()).unwrap();
-                return Some(match keyword.as_str() {
+                return Some(Ok(match keyword.as_str() {
                     "BEGIN" => Token::Begin,
                     "END" => Token::End,
                     "IFP" => Token::IfPositive,
@@ -111,7 +112,7 @@ impl Iterator for Lexer {
                     "PRINT" => Token::Print,
                     "READ" => Token::Read,
                     _ => Token::Identifier(keyword),
-                })
+                }));
             },
             b'0'..=b'9' => {
                 let starting_position = self.current_position;
@@ -120,7 +121,11 @@ impl Iterator for Lexer {
                 }
 
                 let number = String::from_utf8(self.input[starting_position..self.current_position].to_vec()).unwrap();
-                return Some(Token::Number(number.parse::<i32>().unwrap()));
+                let Ok(number) = number.parse::<i32>() else {
+                    return Some(Err(anyhow!("Invalid number: {number}")));
+                };
+
+                return Some(Ok(Token::Number(number)));
             },
             b'+' => Token::Add,
             b'-' => Token::Subtract,
@@ -131,11 +136,13 @@ impl Iterator for Lexer {
             b'(' => Token::LeftParenthesis,
             b')' => Token::RightParenthesis,
             0 => return None,
-            _ => unreachable!("Invalid character: {}", self.character as char),
+            _ => {
+                return Some(Err(anyhow!("Invalid character: {}", self.character as char)));
+            },
         };
 
         self.set_next_character();
-        Some(token)
+        Some(Ok(token))
     }
 }
 
@@ -144,7 +151,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn tokenizes_correctly() {
+    fn tokenizes_correctly() -> Result<()> {
         let sample_program = String::from("
             {This is a sample program. 🤠}
             BEGIN
@@ -182,7 +189,7 @@ mod tests {
             END
         ");
 
-        let tokens: Vec<Token> = Lexer::new(sample_program).collect();
+        let tokens = Lexer::new(sample_program).collect::<Result<Vec<Token>>>()?;
         assert_eq!(tokens, vec![
             Token::Begin,
 
@@ -286,22 +293,28 @@ mod tests {
 
             Token::End,
         ]);
+
+        Ok(())
     }
 
     #[test]
-    fn allows_single_line_programs() {
-        let tokens: Vec<Token> = Lexer::new(String::from("BEGIN PRINT lol END")).collect();
+    fn allows_single_line_programs() -> Result<()> {
+        let tokens = Lexer::new(String::from("BEGIN PRINT lol END")).collect::<Result<Vec<Token>>>()?;
         assert_eq!(tokens, vec![
             Token::Begin,
             Token::Print,
             Token::Identifier(String::from("lol")),
             Token::End,
         ]);
+
+        Ok(())
     }
 
     #[test]
-    fn handles_empty_input() {
-        let tokens: Vec<Token> = Lexer::new(String::from("")).collect();
+    fn handles_empty_input() -> Result<()> {
+        let tokens = Lexer::new(String::from("")).collect::<Result<Vec<Token>>>()?;
         assert_eq!(tokens, vec![]);
+
+        Ok(())
     }
 }
