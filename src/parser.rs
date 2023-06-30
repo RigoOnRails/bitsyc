@@ -12,6 +12,19 @@ pub enum OperatorToken {
     Modulo,
 }
 
+impl From<Token> for OperatorToken {
+    fn from(token: Token) -> Self {
+        match token {
+            Token::Add => Self::Add,
+            Token::Subtract => Self::Subtract,
+            Token::Multiply => Self::Multiply,
+            Token::Divide => Self::Divide,
+            Token::Modulo => Self::Modulo,
+            _ => panic!("Invalid operator token."),
+        }
+    }
+}
+
 /// Represents the AST.
 #[derive(Debug, PartialEq)]
 pub enum ASTNode {
