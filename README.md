@@ -1,4 +1,5 @@
 # bitsyc
+![Development workflow](https://github.com/RigoOnRails/bitsyc/actions/workflows/development.yml/badge.svg)
 
 `bitsyc` is a compiler for the Bitsy programming language. Bitsy is a small, not-very-useful language. Its primary purpose is to be the best language to implement for programmers wanting to build a compiler or interpreter for the first time.
 
