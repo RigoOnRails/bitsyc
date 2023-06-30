@@ -270,8 +270,10 @@ mod tests {
 
             Token::End,
         ]);
+    }
 
-        // Make sure we handle empty input.
+    #[test]
+    fn handles_empty_input() {
         let tokens: Vec<Token> = Lexer::new(String::from("")).collect();
         assert_eq!(tokens, vec![]);
     }
