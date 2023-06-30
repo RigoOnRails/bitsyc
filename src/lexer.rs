@@ -72,6 +72,30 @@ impl Lexer {
         self.current_position = self.next_position;
         self.next_position += 1;
     }
+
+    /// Returns the next character without consuming it.
+    fn peek_next_character(&self) -> u8 {
+        if self.next_position >= self.input.len() {
+            0
+        } else {
+            self.input[self.next_position]
+        }
+    }
+
+    /// Consumes all digits & returns the number.
+    fn consume_digits(&mut self, negative: bool) -> Result<i32> {
+        let starting_position = self.current_position;
+        while self.character.is_ascii_digit() {
+            self.set_next_character();
+        }
+
+        let mut number = String::from_utf8(self.input[starting_position..self.current_position].to_vec()).unwrap();
+        if negative { number.insert(0, '-'); }
+
+        number.parse::<i32>().map_err(|_| {
+            anyhow!("Invalid number: {number}")
+        })
+    }
 }
 
 impl Iterator for Lexer {
@@ -119,20 +143,28 @@ impl Iterator for Lexer {
                 }));
             },
             b'0'..=b'9' => {
-                let starting_position = self.current_position;
-                while self.character.is_ascii_digit() {
-                    self.set_next_character();
+                let number = self.consume_digits(false);
+                if let Err(error) = number {
+                    return Some(Err(error));
                 }
 
-                let number = String::from_utf8(self.input[starting_position..self.current_position].to_vec()).unwrap();
-                let Ok(number) = number.parse::<i32>() else {
-                    return Some(Err(anyhow!("Invalid number: {number}")));
-                };
-
-                return Some(Ok(Token::Number(number)));
+                return Some(Ok(Token::Number(number.unwrap())));
             },
             b'+' => Token::Add,
-            b'-' => Token::Subtract,
+            b'-' => {
+                if self.peek_next_character().is_ascii_digit() {
+                    self.set_next_character();
+
+                    let number = self.consume_digits(true);
+                    if let Err(error) = number {
+                        return Some(Err(error));
+                    }
+
+                    return Some(Ok(Token::Number(number.unwrap())));
+                }
+
+                Token::Subtract
+            },
             b'*' => Token::Multiply,
             b'/' => Token::Divide,
             b'%' => Token::Modulo,
@@ -201,8 +233,7 @@ mod tests {
 
             Token::Identifier(String::from("my_number")),
             Token::Assign,
-            Token::Subtract,
-            Token::Number(5),
+            Token::Number(-5),
 
             Token::IfPositive,
             Token::Identifier(String::from("my_number")),
@@ -213,8 +244,7 @@ mod tests {
             Token::Else,
 
             Token::Print,
-            Token::Subtract,
-            Token::Number(999),
+            Token::Number(-999),
 
             Token::End,
 
@@ -326,6 +356,7 @@ mod tests {
 
     #[test]
     fn handles_invalid_number() {
+        // Overflow
         let tokens = Lexer::new(String::from("
             BEGIN
                 a = 2147483648
@@ -333,6 +364,15 @@ mod tests {
         ")).collect::<Result<Vec<Token>>>();
 
         assert_eq!(tokens.unwrap_err().to_string(), "Invalid number: 2147483648");
+
+        // Underflow
+        let tokens = Lexer::new(String::from("
+            BEGIN
+                a = -2147483649
+            END
+        ")).collect::<Result<Vec<Token>>>();
+
+        assert_eq!(tokens.unwrap_err().to_string(), "Invalid number: -2147483649");
     }
 
     #[test]
