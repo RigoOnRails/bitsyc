@@ -1,5 +1,9 @@
 name: Lint & run tests
-on: [push, pull_request]
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
 env:
   RUSTFLAGS: -D warnings
 jobs:
