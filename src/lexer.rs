@@ -1,4 +1,3 @@
-// TODO: Good error messages.
 use anyhow::{Result, anyhow};
 
 #[derive(Debug, PartialEq)]
@@ -88,6 +87,11 @@ impl Iterator for Lexer {
             b'{' => {
                 while self.character != b'}' {
                     self.set_next_character();
+
+                    // If EOF, return error.
+                    if self.character == 0 {
+                        return Some(Err(anyhow!("Unclosed comment")));
+                    }
                 }
 
                 self.set_next_character();
@@ -338,5 +342,16 @@ mod tests {
         ")).collect::<Result<Vec<Token>>>();
 
         assert_eq!(tokens.unwrap_err().to_string(), "Invalid character: $");
+    }
+
+    #[test]
+    fn handles_unclosed_comment() {
+        let tokens = Lexer::new(String::from("
+            BEGIN
+                {This is a comment.
+            END
+        ")).collect::<Result<Vec<Token>>>();
+
+        assert_eq!(tokens.unwrap_err().to_string(), "Unclosed comment");
     }
 }
