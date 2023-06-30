@@ -317,4 +317,15 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn handles_invalid_number() {
+        let tokens = Lexer::new(String::from("
+            BEGIN
+                a = 2147483648
+            END
+        ")).collect::<Result<Vec<Token>>>();
+
+        assert_eq!(tokens.unwrap_err().to_string(), "Invalid number: 2147483648");
+    }
 }
