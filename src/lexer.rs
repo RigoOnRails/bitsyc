@@ -108,6 +108,8 @@ impl Iterator for Lexer {
             b'/' => Token::Divide,
             b'%' => Token::Modulo,
             b'=' => Token::Assign,
+            b'(' => Token::LeftParenthesis,
+            b')' => Token::RightParenthesis,
         };
     }
 }
