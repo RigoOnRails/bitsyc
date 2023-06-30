@@ -1,7 +1,7 @@
 // TODO: Good error messages.
 
 #[derive(Debug, PartialEq)]
-enum Token {
+pub enum Token {
     // Keywords
     Begin,
     End,
@@ -34,7 +34,7 @@ enum Token {
 }
 
 /// Bitsy's lexer. Implements the [Iterator] trait, returning a stream of tokens.
-struct Lexer {
+pub struct Lexer {
     /// The loaded program as a vector of bytes.
     input: Vec<u8>,
     /// The current character.
@@ -47,7 +47,7 @@ struct Lexer {
 
 impl Lexer {
     /// Creates a new lexer from the given input.
-    fn new(input: String) -> Lexer {
+    pub fn new(input: String) -> Lexer {
         let mut lexer = Self {
             input: input.into_bytes(),
             character: 0,

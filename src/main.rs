@@ -1,5 +1,7 @@
 mod lexer;
+use lexer::Lexer;
 
 fn main() {
-    println!("Hello, world!");
+    // TODO: Get input from file.
+    let _lexer = Lexer::new(String::from(""));
 }
