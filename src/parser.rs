@@ -2,11 +2,37 @@ use anyhow::{Result, bail};
 
 use crate::lexer::{Lexer, Token};
 
+/// Represents an operator token.
+#[derive(Debug, PartialEq)]
+pub enum OperatorToken {
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Modulo,
+}
+
 /// Represents the AST.
 #[derive(Debug, PartialEq)]
 pub enum ASTNode {
     /// The entrypoint of the program.
     Program(Vec<ASTNode>),
+
+    /// An assignment.
+    Assignment(String, Box<ASTNode>),
+
+    /// A binary operation.
+    BinaryOperation {
+        left: Box<ASTNode>,
+        operator: OperatorToken,
+        right: Box<ASTNode>,
+    },
+
+    /// A variable.
+    Variable(String),
+
+    /// A number.
+    Number(i32),
 
     /// Placeholder for unimplemented nodes.
     Todo,
@@ -113,6 +139,9 @@ mod tests {
         assert_eq!(
             parse("
                 BEGIN
+                    a = 5
+                    b = (2 * a) + 5
+
                     LOOP
                     END
 
@@ -121,6 +150,19 @@ mod tests {
                 END
             ")?,
             ASTNode::Program(vec![
+                ASTNode::Assignment(String::from("a"), Box::new(ASTNode::Number(5))),
+                ASTNode::Assignment(
+                    String::from("b"),
+                    Box::new(ASTNode::BinaryOperation {
+                        left: Box::new(ASTNode::BinaryOperation {
+                            left: Box::new(ASTNode::Number(2)),
+                            operator: OperatorToken::Multiply,
+                            right: Box::new(ASTNode::Variable(String::from("a"))),
+                        }),
+                        operator: OperatorToken::Add,
+                        right: Box::new(ASTNode::Number(5)),
+                    }),
+                ),
                 ASTNode::Todo,
                 ASTNode::Todo,
             ]),
