@@ -289,6 +289,17 @@ mod tests {
     }
 
     #[test]
+    fn allows_single_line_programs() {
+        let tokens: Vec<Token> = Lexer::new(String::from("BEGIN PRINT lol END")).collect();
+        assert_eq!(tokens, vec![
+            Token::Begin,
+            Token::Print,
+            Token::Identifier(String::from("lol")),
+            Token::End,
+        ]);
+    }
+
+    #[test]
     fn handles_empty_input() {
         let tokens: Vec<Token> = Lexer::new(String::from("")).collect();
         assert_eq!(tokens, vec![]);
