@@ -10,3 +10,4 @@ repository = "https://github.com/RigoOnRails/bitsyc"
 
 [dependencies]
 anyhow = "1.0.71"
+clap = { version = "4.3.10", features = ["derive"] }
