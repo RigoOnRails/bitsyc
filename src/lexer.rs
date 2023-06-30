@@ -22,10 +22,10 @@ enum Token {
     Modulo,
     Assign,
 
-    // Misc
-    Identifier(String),
+    // Separators
     LeftParenthesis,
     RightParenthesis,
-    LeftBrace,
-    RightBrace,
+
+    // Misc
+    Identifier(String),
 }
