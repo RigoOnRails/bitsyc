@@ -59,16 +59,16 @@ impl Parser {
         while !self.completed() {
             self.set_next_token()?;
 
-            program.push(ASTNode::Todo);
+            // Don't consider `END` as a node.
+            if self.current_token != Token::End {
+                program.push(ASTNode::Todo);
+            }
         }
 
         // Don't allow instructions after `BEGIN ... END`.
         if self.next_token.is_some() {
             bail!("Can't parse instructions after `BEGIN ... END`.");
         }
-
-        // TODO: Ignore the final `END` token when parsing the rest of the nodes.
-        program.pop();
 
         Ok(program)
     }
@@ -113,6 +113,9 @@ mod tests {
         assert_eq!(
             parse("
                 BEGIN
+                    LOOP
+                    END
+
                     LOOP
                     END
                 END
