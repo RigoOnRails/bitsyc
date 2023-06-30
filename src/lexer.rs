@@ -1,4 +1,3 @@
-// TODO: Add support for comments.
 // TODO: Good error messages.
 
 #[derive(Debug, PartialEq)]
@@ -34,14 +33,20 @@ enum Token {
     Identifier(String),
 }
 
+/// Bitsy's lexer. Implements the [Iterator] trait, returning a stream of tokens.
 struct Lexer {
+    /// The loaded program as a vector of bytes.
     input: Vec<u8>,
+    /// The current character.
     character: u8,
+    /// The current position in the input.
     current_position: usize,
+    /// The next position in the input.
     next_position: usize,
 }
 
 impl Lexer {
+    /// Creates a new lexer from the given input.
     fn new(input: String) -> Lexer {
         let mut lexer = Self {
             input: input.into_bytes(),
@@ -50,11 +55,14 @@ impl Lexer {
             next_position: 0,
         };
 
+        // Set the current character to the first character.
         lexer.set_next_character();
         lexer
     }
 
+    /// Sets the current character to the next character.
     fn set_next_character(&mut self) {
+        // If no next character, set to 0 (EOF).
         if self.next_position >= self.input.len() {
             self.character = 0;
         } else {
