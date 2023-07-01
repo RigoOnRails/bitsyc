@@ -112,37 +112,43 @@ impl Parser {
         Ok(program)
     }
 
+    /// Parses a statement. For example, `a = 5`, or `PRINT lol`.
     fn parse_statement(&mut self) -> Result<ASTNode> {
-        self.set_next_token()?;
+        self.consume_token()?;
 
         match self.current_token {
-            Token::Identifier(_) => self.parse_assignment(),
+            Token::Identifier(_) => {
+                if self.next_token == Some(Token::Assign) {
+                    return self.parse_assignment();
+                }
+
+                bail!("Expected `=` after identifier.")
+            },
             _ => Ok(ASTNode::Todo),
         }
     }
 
+    /// Parses an assignment. For example, `a = 5`, or `b = (2 * a) + 5`.
     fn parse_assignment(&mut self) -> Result<ASTNode> {
         let name = match self.current_token {
             Token::Identifier(ref name) => name.clone(),
             _ => unreachable!(),
         };
 
-        self.set_next_token()?;
-        if self.current_token != Token::Assign {
-            bail!("Expected `=` after identifier.")
-        }
-
         let expression = self.parse_expression()?;
         Ok(ASTNode::Assignment(name, Box::new(expression)))
     }
 
+    /// Parses an expression. For example, `2 + 3`, or `(x * 2) + 5`.
     fn parse_expression(&mut self) -> Result<ASTNode> {
+        self.consume_token()?;
+
         Ok(ASTNode::Todo)
     }
 
     /// Sets the next token. Returns an error if an EOF is reached.
     /// Also updates the block depth.
-    fn set_next_token(&mut self) -> Result<()> {
+    fn consume_token(&mut self) -> Result<()> {
         if let Some(next_token) = self.next_token.take() {
             self.current_token = next_token;
             self.next_token = self.lexer.next().transpose()?;
